@@ -39,7 +39,8 @@ lit_rev_s <- lit_rev %>%
 # summary of parallelism reporting
 lit_rev_s %>%
   group_by(Parallelism.reporting) %>%
-  summarize(n = n()) 
+  summarize(n = n()) %>%
+  mutate(prop = n/ sum(n) *100)
 
 ggplot(lit_rev_s, aes(x=Parallelism.reporting))+
   geom_bar(stat="count", width=0.7, fill="steelblue")+
@@ -59,6 +60,11 @@ lit_rev_s %>%
   filter(Parallelism.reporting == "Yes") %>%
   group_by(Stats) %>%
   summarize(n = n()) 
+lit_rev_s %>%
+  filter(Parallelism.reporting == "Yes") %>%
+  group_by(Stats.type) %>%
+  summarize(n = n()) 
+# need to muutate some of the names of the stats type
 
 lit_rev_s %>%
   filter(Parallelism.reporting == "Yes") %>%
