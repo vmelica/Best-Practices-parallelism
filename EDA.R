@@ -45,10 +45,12 @@ lit_rev_s %>%
 ggplot(lit_rev_s, aes(x=Parallelism.reporting))+
   geom_bar(stat="count", width=0.7, fill="steelblue")+
   theme_minimal()+ xlab("")
+
 lit_rev_s %>%
   filter(Parallelism.reporting == "Yes") %>%
   group_by(Graph) %>%
-  summarize(n = n()) 
+  summarize(n = n()) %>%
+  mutate(prop = n/ sum(n) *100)
 
 lit_rev_s %>%
   filter(Parallelism.reporting == "Yes") %>%
@@ -59,15 +61,17 @@ lit_rev_s %>%
 lit_rev_s %>%
   filter(Parallelism.reporting == "Yes") %>%
   group_by(Stats) %>%
-  summarize(n = n()) 
-lit_rev_s %>%
-  filter(Parallelism.reporting == "Yes") %>%
-  group_by(Stats.type) %>%
-  summarize(n = n()) 
-# need to muutate some of the names of the stats type
+  summarize(n = n()) %>%
+  mutate(prop = n/ sum(n) *100)
+
 
 lit_rev_s %>%
   filter(Parallelism.reporting == "Yes") %>%
   ggplot(aes(x=Stats))+
   geom_bar(stat="count", width=0.7, fill="steelblue")+
   theme_minimal()+ xlab("")
+lit_rev_s %>%
+  filter(Parallelism.reporting == "Yes", Stats != "N") %>%
+  group_by(Stats.type) %>%
+  summarize(n = n()) 
+# need to muutate some of the names of the stats type
