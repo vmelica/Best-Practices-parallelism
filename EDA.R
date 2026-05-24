@@ -80,10 +80,12 @@ lit_rev_s %>%
   group_by(Stats) %>%
   summarize(n = n()) %>%
   mutate(prop = round(n / sum(n) * 100))
-lit_rev_s %>%
+Stats_test <- lit_rev_s %>%
   filter(Parallelism.reporting == "Yes", Stats != "N") %>%
   group_by(Stats.type) %>%
   summarize(n = n()) 
+write.csv(Stats_test , "Stats_test.csv", row.names = FALSE)
+
 
 lit_rev_s <- lit_rev_s %>%
   mutate(Stats.group = case_when(Stats.type %in% c("ANCOVA","F-test", "ANOVA ", "T-test", "Test of equal slopes", "Pearson's chi_square" ,"Correlation test") ~ "Slopes comparison",
