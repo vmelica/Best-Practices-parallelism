@@ -33,7 +33,8 @@ lit_rev%>%
   filter(Parallelism.reporting == "Yes", Stats != "N") %>%
   group_by(Stats.type) %>%
   summarize(n = n())
-
+lit_rev$Stats <-as.factor(lit_rev$Stats)
+levels(lit_rev$Stats)
 lit_rev <- lit_rev %>%
   filter(number != 127) %>% # remove one row that need to be excluded
   rename(refPalme = Reference.number.in.Dr..Palme.list ) %>% # rename some columns that have long names
@@ -46,6 +47,8 @@ lit_rev <- lit_rev %>%
   mutate(Stats.group = case_when(Stats.type %in% c("ANCOVA","F-test", "ANOVA ", "T-test", "Test of equal slopes", "Pearson's chi_square" ,"Correlation test") ~ "Slopes comparison",
                                  Stats.type %in% c("Linear regression", "R-squared ") ~ "Regression analysis",
                                  Stats.type == "Descriptive stats-CV" ~ "Descriptive",
+                                 Stats == "N" ~ "No stats",
+                                 Stats == "" ~ "No stats",
                                  TRUE ~ "Other" )) %>% # add statistical group column
   select(-c(number,Author.list, City, Country, Class, Latin.Species,Species, number....of.fecal.samples.)) # selecting relevant columns
 
@@ -95,12 +98,12 @@ write.csv(Stats_test , here("./outputs/Stats_test.csv"), row.names = FALSE)
 #two of them did it in addition to a statistical test for equal slopes, therefore they already have a stats group assigned)
 
 lit_rev_s <-lit_rev_s %>%
-mutate(Stats.group = case_when(Stats.group == "Other" & 
-                    DilutionLin == "Y" ~ paste0(Stats.group, "_Diliution Linearity"),
+mutate(Stats.group = case_when((Stats.group == "Other" | Stats.group == "No stats") & 
+                    DilutionLin == "Y" ~ "Dilution Linearity",
                     TRUE ~ Stats.group))
 
 lit_rev_s %>%
-  filter(Stats.group !="Other") %>%
+  filter(Stats.group !="Other"& Stats.group != "No stats" ) %>%
   group_by(Stats.group) %>%
   summarize(n = n())  %>%
   mutate(prop = round(n / sum(n) * 100)) %>%
@@ -108,9 +111,7 @@ lit_rev_s %>%
   geom_bar(stat= "identity", width=0.7, fill="steelblue")+
   theme_minimal()+ ylab("proportion of studies (%)") + xlab("")
 ggsave(here("./outputs/stats_group.png"), width = 6, height = 6, dpi = 600)
-
-
-# need to muutate some of the names of the stats type
+# need to update the merged excel file with the stats group and finish table S1
 lit_rev_s %>%
   filter(Parallelism.reporting == "Yes") %>%
   group_by(Graph) %>%
