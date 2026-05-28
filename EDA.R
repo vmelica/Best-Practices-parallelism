@@ -50,7 +50,7 @@ lit_rev <- lit_rev %>%
                                  Stats == "N" ~ "No stats",
                                  Stats == "" ~ "No stats",
                                  TRUE ~ "Other" )) %>% # add statistical group column
-  select(-c(number,Author.list, City, Country, Class, Latin.Species,Species, number....of.fecal.samples.)) # selecting relevant columns
+  select(-c(Author.list, City, Country, Class, Latin.Species,Species, number....of.fecal.samples.)) # selecting relevant columns
 
 lit_rev%>%
   group_by(Stats.group) %>%
@@ -101,6 +101,11 @@ lit_rev_s <-lit_rev_s %>%
 mutate(Stats.group = case_when((Stats.group == "Other" | Stats.group == "No stats") & 
                     DilutionLin == "Y" ~ "Dilution Linearity",
                     TRUE ~ Stats.group))
+lit_rev_s %>%
+  filter(Parallelism.reporting == "Yes") %>%
+  group_by(Stats.group) %>%
+  summarize(n = n()) %>%
+  mutate(prop = n/ sum(n) *100)
 
 lit_rev_s %>%
   filter(Stats.group !="Other"& Stats.group != "No stats" ) %>%
@@ -112,8 +117,33 @@ lit_rev_s %>%
   theme_minimal()+ ylab("proportion of studies (%)") + xlab("")
 ggsave(here("./outputs/stats_group.png"), width = 6, height = 6, dpi = 600)
 # need to update the merged excel file with the stats group and finish table S1
+
 lit_rev_s %>%
   filter(Parallelism.reporting == "Yes") %>%
+  group_by(Graph) %>%
+  summarize(n = n()) %>%
+  mutate(prop = n/ sum(n) *100)
+
+lit_rev_s %>%
+  filter(Parallelism.reporting == "Yes") %>%
+  group_by(Graph.type) %>%
+  summarize(n = n()) %>%
+  mutate(prop = n/ sum(n) *100)
+
+lit_rev_s %>%
+  filter(Parallelism.reporting == "Yes" ) %>%
+  group_by(Stats) %>%
+  summarize(n = n()) %>%
+  mutate(prop = n/ sum(n) *100)
+
+lit_rev_s %>%
+  filter(Parallelism.reporting == "Yes" & Graph=="Y") %>%
+  group_by(Stats) %>%
+  summarize(n = n()) %>%
+  mutate(prop = n/ sum(n) *100)
+
+lit_rev_s %>%
+  filter(Parallelism.reporting == "Yes" & Stats=="Y") %>%
   group_by(Graph) %>%
   summarize(n = n()) %>%
   mutate(prop = n/ sum(n) *100)
