@@ -36,7 +36,7 @@ lit_rev%>%
 lit_rev$Stats <-as.factor(lit_rev$Stats)
 levels(lit_rev$Stats)
 lit_rev <- lit_rev %>%
-  filter(number != 127) %>% # remove one row that need to be excluded
+  # filter(number != 127) %>% # remove one row that need to be excluded
   rename(refPalme = Reference.number.in.Dr..Palme.list ) %>% # rename some columns that have long names
   rename(DilutionLin = Do.they.test.Dilution.linearity. ) %>%
   mutate(refPalme = case_when(refPalme == "not in the list"~ "NA", 
@@ -44,8 +44,8 @@ lit_rev <- lit_rev %>%
   filter(Parallelism.reporting != "") %>% # removing ghost rows
   # filter(refPalme != "NA" ) %>% # if we decide to remove the non 2022 papers
   select(-starts_with("X")) %>% # removing ghost columns
-  mutate(Stats.group = case_when(Stats.type %in% c("ANCOVA","F-test", "ANOVA ", "T-test", "Test of equal slopes", "Pearson's chi_square" ,"Correlation test") ~ "Slopes comparison",
-                                 Stats.type %in% c("Linear regression", "R-squared ") ~ "Regression analysis",
+  mutate(Stats.group = case_when(Stats.type %in% c("ANCOVA","F-test", "ANOVA ", "T-test", "Test of equal slopes", "Pearson's chi_square" ) ~ "Equality of slopes",
+                                 Stats.type %in% c("Linear regression", "R-squared ","Correlation test") ~ "Correlation/regression",
                                  Stats.type == "Descriptive stats-CV" ~ "Descriptive",
                                  Stats == "N" ~ "No stats",
                                  Stats == "" ~ "No stats",
@@ -63,6 +63,7 @@ lit_rev_s<- read.csv(here("./input/Litreview_rev.csv"))
   
 # colnames(lit_rev_s) # to check
 
+
 # summary of parallelism reporting
 lit_rev_s %>%
   group_by(Parallelism.reporting) %>%
@@ -72,10 +73,18 @@ lit_rev_s %>%
   geom_col(width = 1) +
   coord_polar(theta = "y") +
   theme_void() +
+  
+  scale_fill_manual(values = c(
+    "Yes" = "#4EA72E",
+    "No" = "#7A0000",
+    "Prev" = "#D9D9D9",
+  "Statement" = "#8ED973"))+
   labs(fill = "Parallelism reporting",
        title = " ") +
-  geom_text(aes(label = paste0(round(prop, 1), "%")),
+  theme(text = element_text (size =12, family = "Arial"))+
+  geom_text(aes(label = paste0(round(prop, 1), "%"), fontface = "bold"),
             position = position_stack(vjust = 0.5))
+
 ggsave(here("./outputs/pie_plot.png"), width = 6, height = 6, dpi = 600)
 
 ###### PROPORTION OF STUDIES THAT APPLIED STATS TEST 
@@ -100,7 +109,12 @@ write.csv(Stats_test , here("./outputs/Stats_test.csv"), row.names = FALSE)
 lit_rev_s <-lit_rev_s %>%
 mutate(Stats.group = case_when((Stats.group == "Other" | Stats.group == "No stats") & 
                     DilutionLin == "Y" ~ "Dilution Linearity",
+                    TRUE ~ Stats.group)) %>%
+mutate(Stats.group = case_when(Stats.group == "Equality of slopes" & 
+                    DilutionLin == "Y" ~ "Equality of slopes/Dilution Linearity", 
                     TRUE ~ Stats.group))
+
+
 lit_rev_s %>%
   filter(Parallelism.reporting == "Yes") %>%
   group_by(Stats.group) %>%
