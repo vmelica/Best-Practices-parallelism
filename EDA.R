@@ -34,6 +34,7 @@ lit_rev%>%
   group_by(Stats.type) %>%
   summarize(n = n())
 lit_rev$Stats <-as.factor(lit_rev$Stats)
+
 levels(lit_rev$Stats)
 lit_rev <- lit_rev %>%
   # filter(number != 127) %>% # remove one row that need to be excluded
@@ -44,13 +45,13 @@ lit_rev <- lit_rev %>%
   filter(Parallelism.reporting != "") %>% # removing ghost rows
   # filter(refPalme != "NA" ) %>% # if we decide to remove the non 2022 papers
   select(-starts_with("X")) %>% # removing ghost columns
-  mutate(Stats.group = case_when(Stats.type %in% c("ANCOVA","F-test", "ANOVA ", "T-test", "Test of equal slopes", "Pearson's chi_square" ) ~ "Equality of slopes",
-                                 Stats.type %in% c("Linear regression", "R-squared ","Correlation test") ~ "Correlation/regression",
-                                 Stats.type == "Descriptive stats-CV" ~ "Descriptive",
-                                 Stats == "N" ~ "No stats",
-                                 Stats == "" ~ "No stats",
-                                 TRUE ~ "Other" )) %>% # add statistical group column
-  select(-c(Author.list, City, Country, Class, Latin.Species,Species, number....of.fecal.samples.)) # selecting relevant columns
+  # mutate(Stats.group = case_when(Stats.type %in% c("ANCOVA","F-test", "ANOVA ", "T-test", "Test of equal slopes", "Pearson's chi_square" ) ~ "Equality of slopes",
+                                 # Stats.type %in% c("Linear regression", "R-squared ","Correlation test") ~ "Correlation/regression",
+                                 # Stats.type == "Descriptive stats-CV" ~ "Descriptive",
+                                 # Stats == "N" ~ "No stats",
+                                 # Stats == "" ~ "No stats",
+                                 # TRUE ~ "Other" )) %>% # add statistical group column
+  select(c(refPalme, number, RefID, Journal, Research.area, Title, Population, Animal.Group, immunoassay, Parallelism.reporting, Graph, Graph.type, Stats, Stats.type, DilutionLin, Stats.group, Stats.group.KF)) # selecting relevant columns
 
 lit_rev%>%
   group_by(Stats.group) %>%
@@ -106,13 +107,13 @@ write.csv(Stats_test , here("./outputs/Stats_test.csv"), row.names = FALSE)
 # adding dilution linearity as a stats group ( NOTE: 3 studies have applied dilution linearity, 
 #two of them did it in addition to a statistical test for equal slopes, therefore they already have a stats group assigned)
 
-lit_rev_s <-lit_rev_s %>%
-mutate(Stats.group = case_when((Stats.group == "Other" | Stats.group == "No stats") & 
-                    DilutionLin == "Y" ~ "Dilution Linearity",
-                    TRUE ~ Stats.group)) %>%
-mutate(Stats.group = case_when(Stats.group == "Equality of slopes" & 
-                    DilutionLin == "Y" ~ "Equality of slopes/Dilution Linearity", 
-                    TRUE ~ Stats.group))
+# lit_rev_s <-lit_rev_s %>%
+# mutate(Stats.group = case_when((Stats.group == "Other" | Stats.group == "No stats") & 
+#                     DilutionLin == "Y" ~ "Dilution Linearity",
+#                     TRUE ~ Stats.group)) %>%
+# mutate(Stats.group = case_when(Stats.group == "Equality of slopes" & 
+#                     DilutionLin == "Y" ~ "Equality of slopes/Dilution Linearity", 
+#                     TRUE ~ Stats.group))
 
 
 lit_rev_s %>%
